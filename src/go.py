@@ -1,6 +1,5 @@
 # standard imports
 import sys
-import numpy as np
 
 sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
 import games
@@ -66,7 +65,13 @@ class State(object):
     string = ""
     for i in range(0,self.side):
       for j in range(0,self.side):
-        string += str(self.board[i][j])
+        if self.board[i][j] == 1:
+          string += " ⚪️ "
+        elif self.board[i][j] == 2:
+          string += " ⚫️ "
+        else:
+          string += " 🌫 "
+        # string += str(self.board[i][j])
       string += "\n"
     string += "Next player: " + str(self.turn) + "\n"
     return string
@@ -90,53 +95,87 @@ class GameOver(object):
           continue
         # If not, create a new cluster
         cluster = list()
-        cluster = self.next(cluster, row, column)
+        cluster = self.next(cluster, row, column, self.state.getitem(row,column))
         self.clusters.append(cluster)
     return
 
-  def next(self, cluster, row, column):
+  def next(self, cluster, row, column, stone_colour):
     stone_id = (row, column)
     cluster.append(stone_id)
-    cluster_id = self.state.getitem(row, column)
-    if (self.state.getitem(row+1, column) == cluster_id
+    stone_colour = self.state.getitem(row, column)
+    if (self.state.getitem(row+1, column) == stone_colour
       and not ((row+1,column) in cluster) ):
-      cluster = self.next(cluster, row+1, column)
-    if (self.state.getitem(row-1, column) == cluster_id
+      cluster = self.next(cluster, row+1, column, stone_colour)
+    if (self.state.getitem(row-1, column) == stone_colour
       and not ((row-1,column) in cluster) ):
-      cluster = self.next(cluster, row-1, column)
-    if (self.state.getitem(row, column+1) == cluster_id
+      cluster = self.next(cluster, row-1, column, stone_colour)
+    if (self.state.getitem(row, column+1) == stone_colour
       and not ((row,column+1) in cluster) ):
-      cluster = self.next(cluster, row, column+1)
-    if (self.state.getitem(row, column-1) == cluster_id
+      cluster = self.next(cluster, row, column+1, stone_colour)
+    if (self.state.getitem(row, column-1) == stone_colour
       and not ((row,column-1) in cluster) ):
-      cluster = self.next(cluster, row, column-1)
+      cluster = self.next(cluster, row, column-1, stone_colour)
     return cluster
+
+  def suicide(self, row, column, stone_colour):
+    stone_id = (row, column)
+    cluster = list()
+    cluster = self.next(cluster, row, column, stone_colour)
+    is_suicide = True
+    for stone in cluster:
+      if (not (self.state.getitem(stone[0]+1,stone[1]) in PLAYERS)
+        and not (self.state.getitem(stone[0]+1,stone[1]) is None)):
+        is_suicide = False
+        break
+      if (not (self.state.getitem(stone[0]-1,stone[1]) in PLAYERS)
+        and not (self.state.getitem(stone[0]-1,stone[1]) is None)):
+        is_suicide = False
+        break
+      if (not (self.state.getitem(stone[0],stone[1]+1) in PLAYERS)
+        and not (self.state.getitem(stone[0],stone[1]+1) is None)):
+        is_suicide = False
+        break
+      if (not (self.state.getitem(stone[0],stone[1]-1) in PLAYERS)
+        and not (self.state.getitem(stone[0],stone[1]-1) is None)):
+        is_suicide = False
+        break
+    if is_suicide:
+      return True
 
   def checkborders(self):
     for cluster in self.clusters:
-      condition = True
+      is_gameover = True
       for stone in cluster:
-        if not (self.state.getitem(stone[0]+1,stone[1]) in PLAYERS):
-          condition = False
+        if (not (self.state.getitem(stone[0]+1,stone[1]) in PLAYERS)
+          and not (self.state.getitem(stone[0]+1,stone[1]) is None)):
+          is_gameover = False
           break
-        if not (self.state.getitem(stone[0]-1,stone[1]) in PLAYERS):
-          condition = False
+        if (not (self.state.getitem(stone[0]-1,stone[1]) in PLAYERS)
+          and not (self.state.getitem(stone[0]-1,stone[1]) is None)):
+          is_gameover = False
           break
-        if not (self.state.getitem(stone[0],stone[1]+1) in PLAYERS):
-          condition = False
+        if (not (self.state.getitem(stone[0],stone[1]+1) in PLAYERS)
+          and not (self.state.getitem(stone[0],stone[1]+1) is None)):
+          is_gameover = False
           break
-        if not (self.state.getitem(stone[0],stone[1]-1) in PLAYERS):
-          condition = False
+        if (not (self.state.getitem(stone[0],stone[1]-1) in PLAYERS)
+          and not (self.state.getitem(stone[0],stone[1]-1) is None)):
+          is_gameover = False
           break
-      if condition:
+      if is_gameover:
         return self.state.getitem(stone[0],stone[1])
+    full = True
+    for row in range(1,self.state.rows()+1):
+      for column in range(1,self.state.columns()+1):
+        if self.state.getitem(row,column) == 0:
+          return -1
     return 0
 
   def condition(self, state):
     self.state = state
     self.clusters = list()
     self.cluster()
-    if self.checkborders == 0:
+    if self.checkborders() == -1:
       return False
     return True
 
@@ -165,8 +204,10 @@ class Game(object):
       return 1
     elif winner == 0:
       return 0
-    else:
+    elif winner in PLAYERS:
       return -1
+    # Real utility function
+    
 
   def actions(self, s):
     actions = list()
@@ -200,11 +241,12 @@ class Game(object):
     return state
 
 def main(argv):
-  file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data1.txt", "r")
+  file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data4.txt", "r")
   game = Game()
   state = game.load_board(file)
-  # print(game.terminal_test(state))
-  print(games.alphabeta_search(state, game))
+  print(state)
+  print(game.terminal_test(state))
+  # print(games.alphabeta_search(state, game))
   # print(state)
   # print(game.actions(state))
   # state = game.result(state, (1,1,1))
