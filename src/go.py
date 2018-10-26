@@ -30,10 +30,10 @@ class State(object):
     return
 
   # row and column from 1, 2, ..., side
-  def set(self, code, row, column):
+  def set(self, colour, row, column):
     crow = row - 1
     ccolumn = column - 1
-    self.board[crow][ccolumn] = code
+    self.board[crow][ccolumn] = colour
     return
 
   # row and column from 1, 2, ..., side
@@ -69,7 +69,11 @@ class State(object):
     return item
 
   def clone(self):
-    return copy.deepcopy(self)
+    theclone = State(self.side, self.turn)
+    for row in range(0,self.side):
+      for column in range(0,self.side):
+        theclone.set(self.getitem(row+1,column+1),row+1,column+1)
+    return theclone
 
   # Where are the stones with colours in colours.
   # colours should be a list
@@ -122,6 +126,7 @@ class GameAnalytics(object):
         clusters.append(cluster)
     return clusters
 
+  # Problem here 
   def next(self, state, cluster, row, column, stone_colour):
     stone_id = (row, column)
     cluster.append(stone_id)
@@ -144,7 +149,7 @@ class GameAnalytics(object):
   def suicide(self, state, row, column, stone_colour):
     suicide_state = state.clone()
     suicide_state.play(stone_colour,row,column)
-    suicide_cluster = self.next(state, list(), row, column, stone_colour)
+    suicide_cluster = self.next(suicide_state, list(), row, column, stone_colour)
     return self.surrounded(state, suicide_cluster)
 
   # Checks the surroundings of a cluster and returns True if it's surronded
@@ -183,7 +188,7 @@ class GameAnalytics(object):
     if len(colours) > 1:
       return FLOWER
     elif len(colours) == 1:
-     return colours.pop()
+     return PLAYERS[PLAYERS.index(colours.pop())-1]
     # Checks for suicidal moves
     empty_points = state.stoneplaces([EMPTY])
     for blank in empty_points:
@@ -221,11 +226,11 @@ class GameAnalytics(object):
       colour = state.getitem(stone[0],stone[1])
       freedoms[colour].append(self.freedom(state,cluster))
     other_player = PLAYERS[PLAYERS.index(player)-1]
-    if len(freedoms[player]) == 0 or len(freedoms[other_player]) == 0:
+    if len(freedoms[other_player]) == 0:
       return 0.0
     this_score = float(min(freedoms[player]))
     other_score = float(min(freedoms[other_player]))
-    return (other_score-this_score)/(other_score+this_score)
+    return -(other_score-this_score)/(other_score+this_score)
 
 
 class Game(object):
@@ -264,13 +269,14 @@ class Game(object):
     for row in range(1, s.rows()+1):
       for column in range(1, s.columns()+1):
         if (s.getitem(row,column) == 0
-          and analytics.suicide(s,row,column,s.next())):
+          and not analytics.suicide(s,row,column,s.next())):
           actions.append((s.next(), row, column))
     return actions
 
   def result(self, s, a):
-    s.play(a[0], a[1], a[2])
-    return s
+    result_state = s.clone()
+    result_state.play(a[0],a[1],a[2])
+    return result_state
 
   def load_board(self, s):
     state = None
@@ -295,18 +301,7 @@ def main(argv):
   file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data1.txt", "r")
   game = Game()
   state = game.load_board(file)
-  # cloned_state = game.result(state.clone(), (1,1,1))
-  # print(state)
-  # print(cloned_state)
-  # print(state)
-  print(game.terminal_test(state))
-  print(game.utility(state,game.to_move(state)))
-  # print(games.alphabeta_search(state, game))
-  # print(state)
-  # print(game.actions(state))
-  # print(state)
-  # state = game.result(state, (2,2,1))
-  # print(state)
+  print(games.alphabeta_cutoff_search(state, game))
   pass
 
 if __name__ == "__main__":
