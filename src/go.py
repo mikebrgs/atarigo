@@ -9,6 +9,7 @@ PLAYERS = [1,2]
 EMPTY = 0
 WIN = 1
 DRAW = 0
+FLOWER = 3
 LOSS = -1
 INCOMPLETE = -1
 
@@ -167,17 +168,17 @@ class GameAnalytics(object):
   # Returns the player who won the game, 0 for a draw or -1 for a game
   # that is not over
   def condition(self, state):
+    # Check if the board is full -- in this case we are not able to tell
+    # who one. This is a bad board, shouldn't happen
+    if (len(state.stoneplaces(PLAYERS)) >=
+      state.rows() * state.columns()):
+      return DRAW
     # Checks if the clusters are surrounded
     clusters = self.cluster(state)
     for cluster in clusters:
       if self.surrounded(state,cluster):
         stone = cluster[0]
         return state.getitem(stone[0],stone[1])
-    # Check if the board is full -- in this case we are not able to tell
-    # who one. This is a bad board, shouldn't happen
-    if (len(state.stoneplaces(PLAYERS)) >=
-      state.rows() * state.columns()):
-      return DRAW
     # Checks for suicidal moves
     empty_points = state.stoneplaces([EMPTY])
     for blank in empty_points:
@@ -204,19 +205,21 @@ class GameAnalytics(object):
         freedom_score += 1
     return freedom_score
 
-
+  # Returns a score associated to how good the play is
   def score(self, state, player):
     clusters = self.cluster(state)
     freedoms = dict()
     for plr in PLAYERS:
       freedoms[plr] = list()
-    # colours = list()
     for cluster in clusters:
       stone = cluster[0]
       colour = state.getitem(stone[0],stone[1])
       freedoms[colour].append(self.freedom(state,cluster))
-    this_score = float(max(freedoms[player]))
-    other_score = float(max(freedoms[freedoms.index(player)-1]))
+    other_player = PLAYERS[PLAYERS.index(player)-1]
+    if len(freedoms[player]) == 0 or len(freedoms[other_player]) == 0:
+      return 0.0
+    this_score = float(min(freedoms[player]))
+    other_score = float(min(freedoms[other_player]))
     return (other_score-this_score)/(other_score+this_score)
 
 
@@ -284,7 +287,7 @@ class Game(object):
     return state
 
 def main(argv):
-  file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data6.txt", "r")
+  file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data1.txt", "r")
   game = Game()
   state = game.load_board(file)
   # cloned_state = game.result(state.clone(), (1,1,1))
@@ -292,6 +295,7 @@ def main(argv):
   # print(cloned_state)
   # print(state)
   print(game.terminal_test(state))
+  print(game.utility(state,game.to_move(state)))
   # print(games.alphabeta_search(state, game))
   # print(state)
   # print(game.actions(state))
