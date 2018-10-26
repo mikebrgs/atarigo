@@ -175,10 +175,15 @@ class GameAnalytics(object):
       return DRAW
     # Checks if the clusters are surrounded
     clusters = self.cluster(state)
+    colours = set()
     for cluster in clusters:
       if self.surrounded(state,cluster):
         stone = cluster[0]
-        return state.getitem(stone[0],stone[1])
+        colours.add(state.getitem(stone[0],stone[1]))
+    if len(colours) > 1:
+      return FLOWER
+    elif len(colours) == 1:
+     return colours.pop()
     # Checks for suicidal moves
     empty_points = state.stoneplaces([EMPTY])
     for blank in empty_points:
@@ -243,7 +248,7 @@ class Game(object):
     analytics = GameAnalytics()
     # analytics.setstate(s)
     condition = analytics.condition(s)
-    if condition == p:
+    if condition == p or condition == FLOWER:
       return 1
     elif condition == DRAW:
       return 0
