@@ -1,6 +1,5 @@
 import sys
 
-sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/src/')
 import go
 sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
 import games
@@ -21,7 +20,7 @@ if entry == "2":
 while not exit:
   print(state)
   if game.to_move(state) == player:
-    entry = input()
+    entry = input("Please insert your move: <row> <column> ")
     if "exit" in entry:
       exit == True
     elif len(entry.split(" ")) == 2:

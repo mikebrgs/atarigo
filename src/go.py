@@ -2,8 +2,8 @@
 import sys
 import copy
 
-sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
-import games
+# sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
+# import games
 
 PLAYERS = [1,2]
 EMPTY = 0
@@ -301,7 +301,6 @@ def main(argv):
   file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data1.txt", "r")
   game = Game()
   state = game.load_board(file)
-  print(games.alphabeta_cutoff_search(state, game))
   pass
 
 if __name__ == "__main__":

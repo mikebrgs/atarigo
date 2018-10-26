@@ -1,8 +1,6 @@
 import sys
 
-sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
 import go
-import games
 
 print("---terminal_test---")
 # Test 1
