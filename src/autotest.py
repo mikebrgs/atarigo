@@ -89,7 +89,7 @@ else:
 file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data4.txt", "r")
 game = go.Game()
 state = game.load_board(file)
-if game.utility(state,game.to_move(state)) == 1.0/3.0:
+if game.utility(state,game.to_move(state)) == -1.0/3.0:
   print("Test 4: Success")
 else:
   print("Test 4: Failure")
@@ -98,7 +98,7 @@ else:
 file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data5.txt", "r")
 game = go.Game()
 state = game.load_board(file)
-if game.utility(state,game.to_move(state)) == 1:
+if game.utility(state,game.to_move(state)) == -1:
   print("Test 5: Success")
 else:
   print("Test 5: Failure")
@@ -107,7 +107,16 @@ else:
 file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data6.txt", "r")
 game = go.Game()
 state = game.load_board(file)
-if game.terminal_test(state) == 0.0:
+if game.utility(state,game.to_move(state)) == 0.0:
   print("Test 6: Success")
 else:
   print("Test 6: Failure")
+
+# Test 7
+file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data7.txt", "r")
+game = go.Game()
+state = game.load_board(file)
+if game.utility(state,game.to_move(state)) == -1:
+  print("Test 7: Success")
+else:
+  print("Test 7: Failure")

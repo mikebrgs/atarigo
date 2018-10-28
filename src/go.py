@@ -2,9 +2,6 @@
 import sys
 import copy
 
-# sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
-# import games
-
 PLAYERS = [1,2]
 EMPTY = 0
 WIN = 1
@@ -253,12 +250,14 @@ class Game(object):
     analytics = GameAnalytics()
     # analytics.setstate(s)
     condition = analytics.condition(s)
-    if condition == p or condition == FLOWER:
+    if condition == p:
       return 1
     elif condition == DRAW:
       return 0
     elif condition in PLAYERS:
       return -1
+    elif condition == FLOWER:
+      return PLAYERS[PLAYERS.index(s.next())-1]
     return analytics.score(s,p)
     
 
@@ -296,12 +295,3 @@ class Game(object):
           state.set(int(line[i]),line_number, i + 1)
       line_number += 1
     return state
-
-def main(argv):
-  file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data1.txt", "r")
-  game = Game()
-  state = game.load_board(file)
-  pass
-
-if __name__ == "__main__":
-  main(sys.argv)
