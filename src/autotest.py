@@ -48,14 +48,14 @@ if game.terminal_test(state) == True:
 else:
   print("Test 5: Failure")
 
-# Test 6
-file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data6.txt", "r")
-game = go.Game()
-state = game.load_board(file)
-if game.terminal_test(state) == True:
-  print("Test 6: Success")
-else:
-  print("Test 6: Failure")
+# # Test 6
+# file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/data6.txt", "r")
+# game = go.Game()
+# state = game.load_board(file)
+# if game.terminal_test(state) == True:
+#   print("Test 6: Success")
+# else:
+#   print("Test 6: Failure")
 
 print("---utitity---")
 # Test 1

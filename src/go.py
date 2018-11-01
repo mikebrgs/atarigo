@@ -10,6 +10,15 @@ FLOWER = 3
 LOSS = -1
 INCOMPLETE = -1
 
+class Cluster(object):
+
+  def __init__(self):
+    elements = list()
+    return
+
+  def insert(row,column):
+    pass
+
 class State(object):
   """docstring for State"""
   def __init__(self, side, turn):
@@ -26,25 +35,23 @@ class State(object):
       for j in range(0, side):
         self.board[-1].append(0)
     self.clusters = list()
-    self.clusters_uptodate = True
     return
 
   # row and column from 1, 2, ..., side
   def set(self, colour, row, column):
+    if not (colour in PLAYERS):
+      return 
     crow = row - 1
     ccolumn = column - 1
     self.board[crow][ccolumn] = colour
     # Update clusters
-    # new_cluster = list()
-    # if colour == self.getitem(crow+1, ccolumn):
-    #   for cluster in self.clusters:
-    #     if (crow, ccolumn) in cluster:
-    # elif
-    self.clusters_uptodate = False
+    self.update_clusters(row,column,colour)
     return
 
   # row and column from 1, 2, ..., side
   def play(self, player, row, column):
+    if not (player in PLAYERS):
+      return 
     crow = row - 1
     ccolumn = column - 1
     if player != self.turn:
@@ -55,7 +62,50 @@ class State(object):
     self.turn = PLAYERS[(PLAYERS.index(player)+1)%2]
     self.other = PLAYERS[(PLAYERS.index(self.turn)+1)%2]
     # Update clusters
-    self.clusters_uptodate = False
+    self.update_clusters(row,column,player)
+    return
+
+  def update_clusters(self, row, column, colour):
+    # Update clusters
+    new_cluster = [(row, column)]
+    old_clusters = list()
+    # Above
+    if colour == self.getitem(row+1, column):
+      for cluster in self.clusters:
+        if cluster in old_clusters:
+          break
+        if (row+1, column) in cluster:
+          old_clusters.append(cluster)
+          break
+    # Below
+    if colour == self.getitem(row-1, column):
+      for cluster in self.clusters:
+        if cluster in old_clusters:
+          break
+        if (row-1, column) in cluster:
+          old_clusters.append(cluster)
+          break
+    # Right
+    if colour == self.getitem(row, column+1):
+      for cluster in self.clusters:
+        if cluster in old_clusters:
+          break
+        if (row, column+1) in cluster:
+          old_clusters.append(cluster)
+          break
+    # Left
+    if colour == self.getitem(row, column-1):
+      for cluster in self.clusters:
+        if cluster in old_clusters:
+          break
+        if (row, column-1) in cluster:
+          old_clusters.append(cluster)
+          break
+    # Remove old clusters and create new big cluster
+    for cluster in old_clusters:
+      self.clusters.remove(cluster)
+      new_cluster.extend(cluster)
+    self.clusters.append(new_cluster)
     return
 
   def next(self):
@@ -98,15 +148,14 @@ class State(object):
           places.append((row+1,column+1))
     return places
 
-  def uptodate(self):
-    return self.clusters_uptodate
-
   def getclusters(self):
     return self.clusters
 
-  def updateclusters(self):
-    
-    pass
+  def getcluster(self, row, column):
+    for cluster in self.clusters:
+      if (row,column) in cluster:
+        return cluster
+    return list()
 
   def __str__(self):
     string = ""
@@ -130,66 +179,28 @@ class GameAnalytics(object):
     # Maybe for later
     self.state = None
 
-  def cluster(self,state):
-    clusters = list()
-    for row in range(1, state.rows()+1):
-      for column in range(1, state.columns()+1):
-        # Skip empty spots
-        if state.getitem(row,column) == 0:
-          continue
-        id = (row,column)
-        # Check if already associated to a cluster
-        flat_clusters = [stone for cluster in clusters for stone in cluster]
-        # for cluster in clusters:
-        if id in flat_clusters:
-          continue
-        # If not, create a new cluster
-        cluster = list()
-        cluster = self.next(state, cluster, row, column, state.getitem(row,column))
-        clusters.append(cluster)
-    return clusters
-
-  # Problem here 
-  def next(self, state, cluster, row, column, stone_colour):
-    stone_id = (row, column)
-    cluster.append(stone_id)
-    stone_colour = state.getitem(row, column)
-    if (state.getitem(row+1, column) == stone_colour
-      and not ((row+1,column) in cluster) ):
-      cluster = self.next(state, cluster, row+1, column, stone_colour)
-    if (state.getitem(row-1, column) == stone_colour
-      and not ((row-1,column) in cluster) ):
-      cluster = self.next(state, cluster, row-1, column, stone_colour)
-    if (state.getitem(row, column+1) == stone_colour
-      and not ((row,column+1) in cluster) ):
-      cluster = self.next(state, cluster, row, column+1, stone_colour)
-    if (state.getitem(row, column-1) == stone_colour
-      and not ((row,column-1) in cluster) ):
-      cluster = self.next(state, cluster, row, column-1, stone_colour)
-    return cluster
-
   # Returns true if a play is suicidal or false otherwise
   def suicide(self, state, row, column, stone_colour):
     other_colour = PLAYERS[(PLAYERS.index(stone_colour)+1)%2]
     suicide_state = state.clone()
     suicide_state.play(stone_colour,row,column)
-    suicide_cluster = self.next(suicide_state, list(), row, column, stone_colour)
+    suicide_cluster = suicide_state.getcluster(row,column)
     if not self.surrounded(state, suicide_cluster):
       return False
     if suicide_state.getitem(row+1, column) == other_colour:
-      neighbour_cluster = self.next(suicide_state, list(), row+1, column, other_colour)
+      neighbour_cluster = state.getcluster(row+1,column)
       if self.surrounded(suicide_state, neighbour_cluster):
         return False
     if suicide_state.getitem(row-1, column) == other_colour:
-      neighbour_cluster = self.next(suicide_state, list(), row-1, column, other_colour)
+      neighbour_cluster =state.getcluster(row-1,column)
       if self.surrounded(suicide_state, neighbour_cluster):
         return False
     if suicide_state.getitem(row, column+1) == other_colour:
-      neighbour_cluster = self.next(suicide_state, list(), row, column+1, other_colour)
+      neighbour_cluster = state.getcluster(row,column+1)
       if self.surrounded(suicide_state, neighbour_cluster):
         return False
     if suicide_state.getitem(row, column-1) == other_colour:
-      neighbour_cluster = self.next(suicide_state, list(), row, column-1, other_colour)
+      neighbour_cluster = state.getcluster(row,column-1)
       if self.surrounded(suicide_state, neighbour_cluster):
         return False
     return True
@@ -220,9 +231,9 @@ class GameAnalytics(object):
     # who one. This is a bad board, shouldn't happen
     if (len(state.stoneplaces(PLAYERS)) >=
       state.rows() * state.columns()):
-      return DRAW
+      return state.previous()
     # Checks if the clusters are surrounded
-    clusters = self.cluster(state)
+    clusters = state.getclusters()
     colours = set()
     for cluster in clusters:
       if self.surrounded(state,cluster):
@@ -260,7 +271,7 @@ class GameAnalytics(object):
 
   # Returns a score associated to how good the play is
   def score(self, state, player):
-    clusters = self.cluster(state)
+    clusters = state.getclusters()
     freedoms = dict()
     for plr in PLAYERS:
       freedoms[plr] = list()
@@ -271,9 +282,11 @@ class GameAnalytics(object):
     other_player = PLAYERS[PLAYERS.index(player)-1]
     if len(freedoms[other_player]) == 0:
       return 0.0
+    if len(freedoms[player]) == 0:
+      return 0.0
     this_score = float(min(freedoms[player]))
     other_score = float(min(freedoms[other_player]))
-    return -(other_score-this_score)/(other_score+this_score)
+    return (this_score - other_score) / (other_score + this_score)
 
 
 class Game(object):
@@ -303,7 +316,7 @@ class Game(object):
     elif condition in PLAYERS:
       return -1
     elif condition == FLOWER:
-      if PLAYERS[PLAYERS.index(s.next())-1] == p:
+      if s.previous() == p:
         return 1
       else:
         return -1
