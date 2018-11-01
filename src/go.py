@@ -18,12 +18,15 @@ class State(object):
     self.side = side
     # Next player
     self.turn = turn
+    self.other = PLAYERS[(PLAYERS.index(self.turn)+1)%2]
     # State of the board
     self.board = list()
     for i in range(0, side):
       self.board.append(list())
       for j in range(0, side):
         self.board[-1].append(0)
+    self.clusters = list()
+    self.clusters_uptodate = True
     return
 
   # row and column from 1, 2, ..., side
@@ -31,6 +34,13 @@ class State(object):
     crow = row - 1
     ccolumn = column - 1
     self.board[crow][ccolumn] = colour
+    # Update clusters
+    # new_cluster = list()
+    # if colour == self.getitem(crow+1, ccolumn):
+    #   for cluster in self.clusters:
+    #     if (crow, ccolumn) in cluster:
+    # elif
+    self.clusters_uptodate = False
     return
 
   # row and column from 1, 2, ..., side
@@ -43,10 +53,16 @@ class State(object):
       return
     self.board[crow][ccolumn] = player
     self.turn = PLAYERS[(PLAYERS.index(player)+1)%2]
+    self.other = PLAYERS[(PLAYERS.index(self.turn)+1)%2]
+    # Update clusters
+    self.clusters_uptodate = False
     return
 
   def next(self):
     return self.turn
+
+  def previous(self):
+    return self.other
 
   def rows(self):
     return self.side
@@ -82,14 +98,24 @@ class State(object):
           places.append((row+1,column+1))
     return places
 
+  def uptodate(self):
+    return self.clusters_uptodate
+
+  def getclusters(self):
+    return self.clusters
+
+  def updateclusters(self):
+    
+    pass
+
   def __str__(self):
     string = ""
     for i in range(0,self.side):
       for j in range(0,self.side):
         if self.board[i][j] == 1:
-          string += " ⚪️ "
+          string += " ⚫ "
         elif self.board[i][j] == 2:
-          string += " ⚫️ "
+          string += " ⚪ "
         else:
           string += " 🌫 "
         # string += str(self.board[i][j])
@@ -144,10 +170,30 @@ class GameAnalytics(object):
 
   # Returns true if a play is suicidal or false otherwise
   def suicide(self, state, row, column, stone_colour):
+    other_colour = PLAYERS[(PLAYERS.index(stone_colour)+1)%2]
     suicide_state = state.clone()
     suicide_state.play(stone_colour,row,column)
     suicide_cluster = self.next(suicide_state, list(), row, column, stone_colour)
-    return self.surrounded(state, suicide_cluster)
+    if not self.surrounded(state, suicide_cluster):
+      return False
+    if suicide_state.getitem(row+1, column) == other_colour:
+      neighbour_cluster = self.next(suicide_state, list(), row+1, column, other_colour)
+      if self.surrounded(suicide_state, neighbour_cluster):
+        return False
+    if suicide_state.getitem(row-1, column) == other_colour:
+      neighbour_cluster = self.next(suicide_state, list(), row-1, column, other_colour)
+      if self.surrounded(suicide_state, neighbour_cluster):
+        return False
+    if suicide_state.getitem(row, column+1) == other_colour:
+      neighbour_cluster = self.next(suicide_state, list(), row, column+1, other_colour)
+      if self.surrounded(suicide_state, neighbour_cluster):
+        return False
+    if suicide_state.getitem(row, column-1) == other_colour:
+      neighbour_cluster = self.next(suicide_state, list(), row, column-1, other_colour)
+      if self.surrounded(suicide_state, neighbour_cluster):
+        return False
+    return True
+
 
   # Checks the surroundings of a cluster and returns True if it's surronded
   # or false otherwise
@@ -257,7 +303,10 @@ class Game(object):
     elif condition in PLAYERS:
       return -1
     elif condition == FLOWER:
-      return PLAYERS[PLAYERS.index(s.next())-1]
+      if PLAYERS[PLAYERS.index(s.next())-1] == p:
+        return 1
+      else:
+        return -1
     return analytics.score(s,p)
     
 
