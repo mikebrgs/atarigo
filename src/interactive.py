@@ -2,9 +2,11 @@ import sys
 
 import go
 sys.path.insert(0, '/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/ext/aima-python/')
+#sys.path.insert(0, '/Users/loure/Documents/Github/AIma-python/aima-python')
 import games
 
 file = open("/Users/mikebrgs/CurrentWork/tecnico/iasd/proj1/data/clean.txt", "r")
+#file = open("/Users/loure/Dropbox/Lourenço/Faculdade/5A1S/IASD/atarigo/data/clean.txt", "r")
 game = go.Game()
 state = game.load_board(file)
 print("You are player? [1/2]")
