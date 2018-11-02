@@ -274,7 +274,7 @@ class GameAnalytics(object):
       return 0.0
     this_score = float(min(freedoms[player]))
     other_score = float(min(freedoms[other_player]))
-    return (this_score - other_score) / (other_score + this_score)
+    return (this_score**2 - other_score**4) / (this_score**2 + other_score**4)
 
 
 class Game(object):
