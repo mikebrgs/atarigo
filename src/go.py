@@ -309,7 +309,7 @@ class Game(object):
       else:
         return -1
     return analytics.score(s,p)
-    
+
 
   def actions(self, s):
     analytics = GameAnalytics()
@@ -320,6 +320,8 @@ class Game(object):
         if (s.getitem(row,column) == 0
           and not analytics.suicide(s,row,column,s.next())):
           actions.append((s.next(), row, column))
+    #sort actions by utility
+    #actions.sort(key=lambda action: self.utility(self.result(s,action),s.next()))
     return actions
 
   def result(self, s, a):
