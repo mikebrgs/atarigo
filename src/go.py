@@ -10,15 +10,7 @@ FLOWER = 3
 LOSS = -1
 INCOMPLETE = -1
 
-class Cluster(object):
-
-  def __init__(self):
-    elements = list()
-    return
-
-  def insert(row,column):
-    pass
-
+# Cortar extremidades do tabuleir quando elas estão vazias
 class State(object):
   """docstring for State"""
   def __init__(self, side, turn):
@@ -132,11 +124,7 @@ class State(object):
     return item
 
   def clone(self):
-    theclone = State(self.side, self.turn)
-    for row in range(0,self.side):
-      for column in range(0,self.side):
-        theclone.set(self.getitem(row+1,column+1),row+1,column+1)
-    return theclone
+    return copy.deepcopy(self)
 
   # Where are the stones with colours in colours.
   # colours should be a list
