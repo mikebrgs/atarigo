@@ -73,7 +73,7 @@ class State(object):
     if colour == self.getitem(row+1, column):
       for cluster in self.clusters:
         if cluster in old_clusters:
-          break
+          continue
         if (row+1, column) in cluster:
           old_clusters.append(cluster)
           break
@@ -81,7 +81,7 @@ class State(object):
     if colour == self.getitem(row-1, column):
       for cluster in self.clusters:
         if cluster in old_clusters:
-          break
+          continue
         if (row-1, column) in cluster:
           old_clusters.append(cluster)
           break
@@ -89,7 +89,7 @@ class State(object):
     if colour == self.getitem(row, column+1):
       for cluster in self.clusters:
         if cluster in old_clusters:
-          break
+          continue
         if (row, column+1) in cluster:
           old_clusters.append(cluster)
           break
@@ -97,7 +97,7 @@ class State(object):
     if colour == self.getitem(row, column-1):
       for cluster in self.clusters:
         if cluster in old_clusters:
-          break
+          continue
         if (row, column-1) in cluster:
           old_clusters.append(cluster)
           break

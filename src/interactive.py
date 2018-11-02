@@ -28,7 +28,7 @@ while not exit:
       column = int(entry.split(" ")[1])
       state = game.result(state,(player,row,column))
   elif game.to_move(state) == computer:
-    action = games.alphabeta_cutoff_search(state,game,d=1)
+    action = games.alphabeta_cutoff_search(state,game,d=4)
     state = game.result(state,action)
   else:
     print("Error")
