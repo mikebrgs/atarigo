@@ -320,6 +320,7 @@ class Game(object):
         if (s.getitem(row,column) == 0
           and not analytics.suicide(s,row,column,s.next())):
           actions.append((s.next(), row, column))
+    actions.sort(key = lambda action: self.utility(self.result(s,action),self.to_move(s)), reverse=True)
     return actions
 
   def result(self, s, a):
