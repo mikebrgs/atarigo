@@ -276,6 +276,18 @@ class GameAnalytics(object):
     other_score = float(min(freedoms[other_player]))
     return (this_score - other_score) / (other_score + this_score)
 
+  def neighbours(self, state, action):
+    count = 0
+    if state.getitem(action[1]+1,action[2]) in PLAYERS:
+      count += 1
+    if state.getitem(action[1],action[2]+1) in PLAYERS:
+      count += 1
+    if state.getitem(action[1]-1,action[2]) in PLAYERS:
+      count += 1
+    if state.getitem(action[1],action[2]-1) in PLAYERS:
+      count += 1
+    return count
+
 
 class Game(object):
   """docstring for Game"""
@@ -309,7 +321,6 @@ class Game(object):
       else:
         return -1
     return analytics.score(s,p)
-    
 
   def actions(self, s):
     analytics = GameAnalytics()
@@ -320,7 +331,13 @@ class Game(object):
         if (s.getitem(row,column) == 0
           and not analytics.suicide(s,row,column,s.next())):
           actions.append((s.next(), row, column))
-    actions.sort(key = lambda action: self.utility(self.result(s,action),self.to_move(s)), reverse=True)
+    # Usar função mais rápida e ordenar os primeiros com o terminal
+    actions.sort(key = lambda action: analytics.neighbours(s,action), reverse = True)
+    selective = [action for action in actions if analytics.neighbours(s,action) != 0]
+    nelective = [action for action in actions if analytics.neighbours(s,action) == 0]
+    selective.sort(key = lambda action: self.utility(self.result(s,action),self.to_move(s)), reverse = True)
+    actions = selective
+    actions.extend(nelective)
     return actions
 
   def result(self, s, a):
