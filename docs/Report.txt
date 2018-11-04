@@ -1,0 +1,11 @@
+Q1. Describe the state representation used and justify its choice.
+
+A representação de estados foi escolhida de forma a que cada estado seja representado por uma matriz (lista de listas) quadrada da dimensão do tabuleiro (n*n), em que cada célula representa a cor de uma pedra (vazio=0, preto=1 e branco=2). Foi escolhida a representação de matriz pela eficiência computacional na leitura e escrita.
+É também armazenada no estado uma lista de clusters (sendo um cluster um conjunto de pedras da mesma cor ligadas entre si). Os clusters são atualizados a cada jogada e servem para verificar a condição terminal e para avaliar o score do tabuleiro (verificando os graus de liberdade dos clusters de cada jogador). 
+O estado guarda também a informação do tamanho do tabuleiro, o jogador atual e o próximo jogador.
+
+
+Q2. Describe the evaluation function used and justify its design.
+
+A função de utilidade procura minimizar os graus de liberdade do adversário e maximizar os graus de liberdade do próprio. Dado que o objectivo do jogo é capturar uma pedra adversária antes que o adversário capture uma peça nossa, a função foca apenas nos graus de liberdade dos clusters com menos graus de liberdade dos jogadores. Assim, a função a ser maximizada é dada pela diferença entre os graus de liberdade do cluster do agente com menos graus de liberdade e o cluster adversário com menos graus de liberdade, normalizada pelo : 
+U = [minDOF(agent_clusters)-minDOF(adversary_clusters)]/[minDOF(agent_clusters)+minDOF(adversary_clusters)]
